@@ -84,7 +84,7 @@ export default function BlogPostPage() {
               })}
             </span>
             <User className="h-4 w-4 mr-1" />
-            <span>AffiliatePro Team</span>
+            <span>DevToolHub Team</span>
           </div>
 
           <p className="text-xl text-gray-600 leading-relaxed">
@@ -105,7 +105,7 @@ export default function BlogPostPage() {
         <Card className="mb-8">
           <CardContent className="p-8">
             <div className="prose prose-lg max-w-none">
-              {blogPost.content.split('\n\n').map((paragraph, index) => {
+              {(blogPost.content || '').split('\n\n').map((paragraph, index) => {
                 if (paragraph.startsWith('## ')) {
                   return (
                     <h2 key={index} className="text-2xl font-bold text-gray-900 mt-8 mb-4">

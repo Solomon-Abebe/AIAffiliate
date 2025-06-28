@@ -9,10 +9,10 @@ export function Footer() {
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <Bot className="h-8 w-8 text-primary" />
-              <h3 className="text-2xl font-bold text-primary">AffiliatePro</h3>
+              <h3 className="text-2xl font-bold text-primary">DevToolHub</h3>
             </div>
             <p className="text-gray-400 mb-6">
-              AI-powered product recommendations and honest reviews to help you make informed purchasing decisions.
+              AI-powered recommendations for the best fullstack development tools, courses, and services for React and Node.js developers.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-gray-400 hover:text-white transition-colors">

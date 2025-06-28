@@ -1,8 +1,8 @@
-# AffiliatePro - AI-Powered Product Recommendation Platform
+# DevToolHub - AI-Powered Developer Tool Platform
 
 ## Overview
 
-AffiliatePro is a modern web application that combines AI-powered product recommendations with affiliate marketing. The platform features a React frontend, Express.js backend, PostgreSQL database with Drizzle ORM, and integrates OpenAI for intelligent chat assistance. Users can browse products, get personalized recommendations through an AI chatbot, read reviews, and make informed purchasing decisions.
+DevToolHub is a specialized web application that combines AI-powered tool recommendations with affiliate marketing, focused specifically on fullstack development. The platform features a React frontend, Express.js backend, PostgreSQL database with Drizzle ORM, and integrates OpenAI for intelligent chat assistance. Developers can browse development tools, courses, and services, get personalized recommendations through an AI chatbot, read expert guides, and make informed decisions for their projects.
 
 ## System Architecture
 
@@ -30,17 +30,17 @@ AffiliatePro is a modern web application that combines AI-powered product recomm
 
 ## Key Components
 
-### Product Management
-- Product catalog with categories, pricing, and ratings
-- Featured products highlighting
-- Product search and filtering capabilities
+### Developer Tool Management
+- Tool catalog with categories, pricing, and developer ratings
+- Featured tools and courses highlighting
+- Tool search and filtering capabilities for React/Node.js ecosystem
 - Affiliate link tracking and management
 
 ### AI Chat System
-- OpenAI GPT-4o integration for intelligent responses
+- OpenAI GPT-4o integration for intelligent developer assistance
 - Session-based chat history persistence
-- Product recommendation generation
-- Context-aware shopping assistance
+- Tool and course recommendation generation
+- Context-aware development guidance and best practices
 
 ### User Interaction
 - Newsletter subscription management
@@ -99,21 +99,23 @@ AffiliatePro is a modern web application that combines AI-powered product recomm
 - Automated schema validation
 
 ## Recent Changes
-- June 28, 2025: Added comprehensive blog system with SEO-optimized content
-- June 28, 2025: Migrated from memory storage to PostgreSQL database with sample data
-- June 28, 2025: Implemented working search functionality with real-time product results
-- June 28, 2025: Enhanced AI chatbot with detailed product knowledge and website context
-- June 28, 2025: Added functional "Start Exploring" and "Watch Demo" buttons
-- June 28, 2025: Created blog pages with three detailed buying guides (tech products, headphones, smart home)
-- June 28, 2025: Populated database with 6 products, 3 testimonials, and 3 blog posts
+- June 28, 2025: **MAJOR NICHE UPDATE** - Transformed website to focus on fullstack development tools and resources
+- June 28, 2025: Rebranded from "AffiliatePro" to "DevToolHub" throughout the application
+- June 28, 2025: Updated product catalog with developer-focused tools (VS Code extensions, React/Node.js courses, cloud services, databases)
+- June 28, 2025: Enhanced AI chatbot training for fullstack development expertise and tool recommendations
+- June 28, 2025: Updated testimonials with developer-focused feedback from software engineers and tech leads
+- June 28, 2025: Created specialized blog content for React, Node.js, TypeScript, and fullstack development
+- June 28, 2025: Updated all website copy, navigation, and branding to reflect developer tool focus
+- June 28, 2025: Populated database with 6 developer tools/courses, 3 developer testimonials, and 3 technical blog posts
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
 
 ## Current Status
-✓ Fully functional affiliate marketing website with AI chatbot
-✓ Database-driven product catalog with search capabilities  
-✓ SEO-optimized blog section with detailed buying guides
-✓ Enhanced AI assistant trained on products and site content
-✓ Responsive design with working navigation and interactive features
+✓ Fully functional developer tool platform with AI chatbot specialized for fullstack development
+✓ Database-driven tool catalog with search capabilities focused on React/Node.js ecosystem
+✓ SEO-optimized blog section with detailed technical guides and tutorials
+✓ Enhanced AI assistant trained on developer tools and fullstack development best practices
+✓ Responsive design with working navigation and developer-focused interactive features
+✓ Successfully niched down to serve fullstack developers with specialized content and recommendations

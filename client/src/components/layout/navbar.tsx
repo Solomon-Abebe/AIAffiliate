@@ -51,7 +51,7 @@ export function Navbar() {
             <Link href="/" className="flex-shrink-0">
               <div className="flex items-center space-x-2">
                 <Bot className="h-8 w-8 text-primary" />
-                <h1 className="text-2xl font-bold text-primary">AffiliatePro</h1>
+                <h1 className="text-2xl font-bold text-primary">DevToolHub</h1>
               </div>
             </Link>
             

@@ -8,10 +8,10 @@ export default function About() {
       <section className="bg-gradient-to-br from-blue-50 to-indigo-100 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-            About AffiliatePro
+            About DevToolHub
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            We're revolutionizing how consumers discover and purchase products through AI-powered recommendations and transparent affiliate marketing.
+            We're the premier platform for fullstack developers, curating the best tools, courses, and services for React, Node.js, and modern web development.
           </p>
         </div>
       </section>
@@ -25,10 +25,10 @@ export default function About() {
                 Our Mission
               </h2>
               <p className="text-lg text-gray-600 mb-6">
-                We're passionate about helping consumers make informed purchasing decisions. Our AI-powered platform analyzes thousands of products, reviews, and data points to provide honest, unbiased recommendations.
+                We're passionate about helping fullstack developers discover the best tools and resources for their projects. Our AI-powered platform analyzes development tools, courses, and services to provide honest, expert recommendations.
               </p>
               <p className="text-lg text-gray-600 mb-8">
-                As an affiliate marketing platform, we earn commissions from qualifying purchases at no extra cost to you. This allows us to provide our services for free while maintaining editorial independence.
+                As a specialized affiliate platform for developers, we earn commissions from qualifying purchases at no extra cost to you. This allows us to provide our curation services for free while maintaining editorial independence focused on quality developer tools.
               </p>
               <div className="space-y-4">
                 <div className="flex items-center space-x-4">

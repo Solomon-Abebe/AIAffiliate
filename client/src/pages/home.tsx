@@ -28,14 +28,14 @@ export default function Home() {
             <div>
               <div className="flex items-center space-x-2 text-sm text-primary font-medium mb-4">
                 <Bot className="h-4 w-4" />
-                <span>AI-Powered Recommendations</span>
+                <span>AI-Powered for Developers</span>
               </div>
               <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-                Discover the Best Products with{" "}
-                <span className="text-primary">AI Guidance</span>
+                Essential Tools for{" "}
+                <span className="text-primary">Fullstack Developers</span>
               </h1>
               <p className="text-xl text-gray-600 mb-8">
-                Get personalized product recommendations, honest reviews, and expert comparisons. Our AI chatbot helps you find exactly what you need.
+                Discover the best development tools, courses, and services curated specifically for React, Node.js, and modern fullstack development. Our AI assistant helps you choose the right tools for your projects.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <Link href="/products">
@@ -60,11 +60,11 @@ export default function Home() {
               <div className="flex items-center space-x-8 text-sm text-gray-600">
                 <div className="flex items-center space-x-2">
                   <CheckCircle className="h-4 w-4 text-secondary" />
-                  <span>10,000+ Products Reviewed</span>
+                  <span>500+ Developer Tools Reviewed</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Users className="h-4 w-4 text-secondary" />
-                  <span>50,000+ Happy Customers</span>
+                  <span>10,000+ Developers Served</span>
                 </div>
               </div>
             </div>
@@ -90,12 +90,12 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center">
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-1">10K+</div>
-              <div className="text-sm text-gray-600">Products Reviewed</div>
+              <div className="text-3xl font-bold text-primary mb-1">500+</div>
+              <div className="text-sm text-gray-600">Dev Tools Reviewed</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-primary mb-1">50K+</div>
-              <div className="text-sm text-gray-600">Happy Customers</div>
+              <div className="text-3xl font-bold text-primary mb-1">10K+</div>
+              <div className="text-sm text-gray-600">Developers Served</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-primary mb-1">98%</div>
@@ -103,7 +103,7 @@ export default function Home() {
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-primary mb-1">24/7</div>
-              <div className="text-sm text-gray-600">AI Support</div>
+              <div className="text-sm text-gray-600">AI Assistant</div>
             </div>
           </div>
         </div>
@@ -114,10 +114,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Featured Product Reviews
+              Featured Developer Tools & Courses
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Discover our top-rated products with detailed reviews, comparisons, and honest recommendations powered by AI analysis.
+              Discover essential tools, courses, and services for React, Node.js, and fullstack development. Curated and tested by experienced developers.
             </p>
           </div>
 
