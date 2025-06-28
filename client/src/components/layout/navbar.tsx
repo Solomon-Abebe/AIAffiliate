@@ -4,14 +4,35 @@ import { Search, Menu, X, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useQuery } from "@tanstack/react-query";
+import type { Product } from "@shared/schema";
 
 export function Navbar() {
   const [location] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearchResults, setShowSearchResults] = useState(false);
+
+  const { data: searchResults } = useQuery<Product[]>({
+    queryKey: ["/api/products/search", { q: searchQuery }],
+    enabled: searchQuery.length > 2,
+  });
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    setShowSearchResults(query.length > 2);
+  };
+
+  const handleSearchSelect = () => {
+    setShowSearchResults(false);
+    setSearchQuery("");
+  };
 
   const navItems = [
     { href: "/", label: "Home" },
     { href: "/products", label: "Products" },
+    { href: "/blog", label: "Blog" },
     { href: "/about", label: "About" },
     { href: "/contact", label: "Contact" },
   ];
@@ -58,7 +79,54 @@ export function Navbar() {
                 type="text"
                 placeholder="Search products..."
                 className="w-64 pl-10"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
+                onFocus={() => searchQuery.length > 2 && setShowSearchResults(true)}
               />
+              
+              {/* Search Results Dropdown */}
+              {showSearchResults && searchResults && searchResults.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+                  <div className="p-2">
+                    <div className="text-xs text-gray-500 mb-2 px-2">
+                      Found {searchResults.length} products
+                    </div>
+                    {searchResults.slice(0, 5).map((product) => (
+                      <Link key={product.id} href="/products">
+                        <div 
+                          className="flex items-center p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
+                          onClick={handleSearchSelect}
+                        >
+                          <img
+                            src={product.imageUrl}
+                            alt={product.name}
+                            className="w-12 h-12 object-cover rounded-lg mr-3"
+                          />
+                          <div className="flex-1">
+                            <div className="font-medium text-gray-900 text-sm line-clamp-1">
+                              {product.name}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {product.category} • ${product.price}
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                    {searchResults.length > 5 && (
+                      <Link href="/products">
+                        <div 
+                          className="text-center p-2 text-primary text-sm hover:bg-gray-50 rounded-lg cursor-pointer"
+                          onClick={handleSearchSelect}
+                        >
+                          View all {searchResults.length} results →
+                        </div>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
             
             <Button className="hidden md:inline-flex">

@@ -87,7 +87,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get product context for better recommendations
       const products = await storage.getProducts();
-      const productContext = products.map(p => `${p.name} (${p.category}) - $${p.price}`).join(', ');
+      const productContext = products.map(p => 
+        `${p.name} - ${p.category} - $${p.price} - ${p.description.substring(0, 100)}...`
+      ).join('\n');
       
       const chatResponse = await generateChatResponse(message, productContext);
       
@@ -130,6 +132,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(history);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch chat history" });
+    }
+  });
+
+  // Product search endpoint
+  app.get("/api/products/search", async (req, res) => {
+    try {
+      const { q } = req.query;
+      if (!q || typeof q !== "string") {
+        return res.status(400).json({ message: "Search query is required" });
+      }
+      const products = await storage.searchProducts(q);
+      res.json(products);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to search products" });
+    }
+  });
+
+  // Blog endpoints
+  app.get("/api/blog", async (req, res) => {
+    try {
+      const blogPosts = await storage.getPublishedBlogPosts();
+      res.json(blogPosts);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch blog posts" });
+    }
+  });
+
+  app.get("/api/blog/:slug", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const blogPost = await storage.getBlogPost(slug);
+      if (!blogPost) {
+        return res.status(404).json({ message: "Blog post not found" });
+      }
+      res.json(blogPost);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch blog post" });
+    }
+  });
+
+  app.get("/api/blog/category/:category", async (req, res) => {
+    try {
+      const { category } = req.params;
+      const blogPosts = await storage.getBlogPostsByCategory(category);
+      res.json(blogPosts);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch blog posts by category" });
     }
   });
 

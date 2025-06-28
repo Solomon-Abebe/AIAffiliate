@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { Rocket, Play, CheckCircle, Users, Bot, Shield, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -37,11 +38,21 @@ export default function Home() {
                 Get personalized product recommendations, honest reviews, and expert comparisons. Our AI chatbot helps you find exactly what you need.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <Button size="lg" className="text-lg">
-                  <Rocket className="mr-2 h-5 w-5" />
-                  Start Exploring
-                </Button>
-                <Button variant="outline" size="lg" className="text-lg">
+                <Link href="/products">
+                  <span>
+                    <Button size="lg" className="text-lg w-full sm:w-auto">
+                      <Rocket className="mr-2 h-5 w-5" />
+                      Start Exploring
+                    </Button>
+                  </span>
+                </Link>
+                <Button variant="outline" size="lg" className="text-lg" onClick={() => {
+                  // Scroll to product comparison section
+                  const comparisonSection = document.querySelector('.product-comparison-section');
+                  if (comparisonSection) {
+                    comparisonSection.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}>
                   <Play className="mr-2 h-5 w-5" />
                   Watch Demo
                 </Button>
@@ -141,7 +152,9 @@ export default function Home() {
       </section>
 
       {/* Product Comparison */}
-      <ProductComparison />
+      <div className="product-comparison-section">
+        <ProductComparison />
+      </div>
 
       {/* Testimonials */}
       <section className="py-20 bg-gradient-to-br from-blue-50 to-indigo-100">

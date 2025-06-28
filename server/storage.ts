@@ -1,10 +1,13 @@
-import { products, testimonials, newsletters, contacts, chatMessages, type Product, type InsertProduct, type Testimonial, type InsertTestimonial, type Newsletter, type InsertNewsletter, type Contact, type InsertContact, type ChatMessage, type InsertChatMessage } from "@shared/schema";
+import { products, testimonials, newsletters, contacts, chatMessages, blogPosts, type Product, type InsertProduct, type Testimonial, type InsertTestimonial, type Newsletter, type InsertNewsletter, type Contact, type InsertContact, type ChatMessage, type InsertChatMessage, type BlogPost, type InsertBlogPost } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // Products
   getProducts(): Promise<Product[]>;
   getProduct(id: number): Promise<Product | undefined>;
   getFeaturedProducts(): Promise<Product[]>;
+  searchProducts(query: string): Promise<Product[]>;
   
   // Testimonials
   getTestimonials(): Promise<Testimonial[]>;
@@ -19,6 +22,81 @@ export interface IStorage {
   // Chat
   saveChatMessage(chatMessage: InsertChatMessage): Promise<ChatMessage>;
   getChatHistory(sessionId: string): Promise<ChatMessage[]>;
+  
+  // Blog
+  getBlogPosts(): Promise<BlogPost[]>;
+  getPublishedBlogPosts(): Promise<BlogPost[]>;
+  getBlogPost(slug: string): Promise<BlogPost | undefined>;
+  getBlogPostsByCategory(category: string): Promise<BlogPost[]>;
+}
+
+export class DatabaseStorage implements IStorage {
+  async getProducts(): Promise<Product[]> {
+    return await db.select().from(products).where(eq(products.isActive, true));
+  }
+
+  async getProduct(id: number): Promise<Product | undefined> {
+    const [product] = await db.select().from(products).where(eq(products.id, id));
+    return product || undefined;
+  }
+
+  async getFeaturedProducts(): Promise<Product[]> {
+    const result = await db.select().from(products).where(eq(products.isActive, true)).limit(6);
+    return result;
+  }
+
+  async searchProducts(query: string): Promise<Product[]> {
+    const result = await db.select().from(products).where(eq(products.isActive, true));
+    return result.filter(product => 
+      product.name.toLowerCase().includes(query.toLowerCase()) ||
+      product.description.toLowerCase().includes(query.toLowerCase()) ||
+      product.category.toLowerCase().includes(query.toLowerCase())
+    );
+  }
+
+  async getTestimonials(): Promise<Testimonial[]> {
+    return await db.select().from(testimonials);
+  }
+
+  async getActiveTestimonials(): Promise<Testimonial[]> {
+    return await db.select().from(testimonials).where(eq(testimonials.isActive, true));
+  }
+
+  async subscribeNewsletter(insertNewsletter: InsertNewsletter): Promise<Newsletter> {
+    const [newsletter] = await db.insert(newsletters).values(insertNewsletter).returning();
+    return newsletter;
+  }
+
+  async createContact(insertContact: InsertContact): Promise<Contact> {
+    const [contact] = await db.insert(contacts).values(insertContact).returning();
+    return contact;
+  }
+
+  async saveChatMessage(insertChatMessage: InsertChatMessage): Promise<ChatMessage> {
+    const [chatMessage] = await db.insert(chatMessages).values(insertChatMessage).returning();
+    return chatMessage;
+  }
+
+  async getChatHistory(sessionId: string): Promise<ChatMessage[]> {
+    return await db.select().from(chatMessages).where(eq(chatMessages.sessionId, sessionId));
+  }
+
+  async getBlogPosts(): Promise<BlogPost[]> {
+    return await db.select().from(blogPosts);
+  }
+
+  async getPublishedBlogPosts(): Promise<BlogPost[]> {
+    return await db.select().from(blogPosts).where(eq(blogPosts.isPublished, true));
+  }
+
+  async getBlogPost(slug: string): Promise<BlogPost | undefined> {
+    const [post] = await db.select().from(blogPosts).where(eq(blogPosts.slug, slug));
+    return post || undefined;
+  }
+
+  async getBlogPostsByCategory(category: string): Promise<BlogPost[]> {
+    return await db.select().from(blogPosts).where(eq(blogPosts.category, category));
+  }
 }
 
 export class MemStorage implements IStorage {
@@ -27,11 +105,13 @@ export class MemStorage implements IStorage {
   private newsletters: Map<number, Newsletter>;
   private contacts: Map<number, Contact>;
   private chatMessages: Map<number, ChatMessage>;
+  private blogPosts: Map<number, BlogPost>;
   private currentProductId: number;
   private currentTestimonialId: number;
   private currentNewsletterId: number;
   private currentContactId: number;
   private currentChatId: number;
+  private currentBlogId: number;
 
   constructor() {
     this.products = new Map();
@@ -39,11 +119,13 @@ export class MemStorage implements IStorage {
     this.newsletters = new Map();
     this.contacts = new Map();
     this.chatMessages = new Map();
+    this.blogPosts = new Map();
     this.currentProductId = 1;
     this.currentTestimonialId = 1;
     this.currentNewsletterId = 1;
     this.currentContactId = 1;
     this.currentChatId = 1;
+    this.currentBlogId = 1;
     
     this.seedData();
   }
@@ -123,8 +205,52 @@ export class MemStorage implements IStorage {
       },
     ];
 
+    // Sample blog posts
+    const sampleBlogPosts: BlogPost[] = [
+      {
+        id: this.currentBlogId++,
+        title: "Best Tech Products of 2024: AI-Powered Review",
+        slug: "best-tech-products-2024-ai-review",
+        excerpt: "Our AI analyzed thousands of products to bring you the top tech picks for 2024, from smartphones to smart home devices.",
+        content: "Technology continues to evolve at breakneck speed in 2024...",
+        category: "Technology",
+        imageUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+        tags: ["tech", "ai", "review", "2024"],
+        isPublished: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: this.currentBlogId++,
+        title: "How to Choose the Perfect Headphones: Complete Guide",
+        slug: "how-to-choose-perfect-headphones-guide",
+        excerpt: "From noise cancellation to sound quality, our comprehensive guide helps you find the ideal headphones for your needs.",
+        content: "Choosing the right headphones can make all the difference...",
+        category: "Audio",
+        imageUrl: "https://images.unsplash.com/photo-1583394838336-acd977736f90?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+        tags: ["headphones", "audio", "guide", "buying"],
+        isPublished: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: this.currentBlogId++,
+        title: "Smart Home Automation: Getting Started",
+        slug: "smart-home-automation-getting-started",
+        excerpt: "Transform your home into a smart home with our beginner-friendly guide to automation and connected devices.",
+        content: "Smart home technology has become more accessible than ever...",
+        category: "Smart Home",
+        imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+        tags: ["smart home", "automation", "iot", "guide"],
+        isPublished: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ];
+
     sampleProducts.forEach(product => this.products.set(product.id, product));
     sampleTestimonials.forEach(testimonial => this.testimonials.set(testimonial.id, testimonial));
+    sampleBlogPosts.forEach(post => this.blogPosts.set(post.id, post));
   }
 
   async getProducts(): Promise<Product[]> {
@@ -137,6 +263,15 @@ export class MemStorage implements IStorage {
 
   async getFeaturedProducts(): Promise<Product[]> {
     return Array.from(this.products.values()).filter(p => p.isActive).slice(0, 6);
+  }
+
+  async searchProducts(query: string): Promise<Product[]> {
+    const allProducts = Array.from(this.products.values()).filter(p => p.isActive);
+    return allProducts.filter(product => 
+      product.name.toLowerCase().includes(query.toLowerCase()) ||
+      product.description.toLowerCase().includes(query.toLowerCase()) ||
+      product.category.toLowerCase().includes(query.toLowerCase())
+    );
   }
 
   async getTestimonials(): Promise<Testimonial[]> {
@@ -186,6 +321,22 @@ export class MemStorage implements IStorage {
       .filter(msg => msg.sessionId === sessionId)
       .sort((a, b) => a.createdAt!.getTime() - b.createdAt!.getTime());
   }
+
+  async getBlogPosts(): Promise<BlogPost[]> {
+    return Array.from(this.blogPosts.values());
+  }
+
+  async getPublishedBlogPosts(): Promise<BlogPost[]> {
+    return Array.from(this.blogPosts.values()).filter(p => p.isPublished);
+  }
+
+  async getBlogPost(slug: string): Promise<BlogPost | undefined> {
+    return Array.from(this.blogPosts.values()).find(p => p.slug === slug);
+  }
+
+  async getBlogPostsByCategory(category: string): Promise<BlogPost[]> {
+    return Array.from(this.blogPosts.values()).filter(p => p.category === category && p.isPublished);
+  }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
