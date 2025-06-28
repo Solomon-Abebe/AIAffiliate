@@ -13,6 +13,7 @@ export const products = pgTable("products", {
   imageUrl: text("image_url").notNull(),
   affiliateUrl: text("affiliate_url").notNull(),
   isActive: boolean("is_active").notNull().default(true),
+  isFeatured: boolean("is_featured").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

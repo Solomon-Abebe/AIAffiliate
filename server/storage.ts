@@ -8,6 +8,9 @@ export interface IStorage {
   getProduct(id: number): Promise<Product | undefined>;
   getFeaturedProducts(): Promise<Product[]>;
   searchProducts(query: string): Promise<Product[]>;
+  createProduct(product: InsertProduct): Promise<Product>;
+  updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product | undefined>;
+  deleteProduct(id: number): Promise<void>;
   
   // Testimonials
   getTestimonials(): Promise<Testimonial[]>;
@@ -41,7 +44,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getFeaturedProducts(): Promise<Product[]> {
-    const result = await db.select().from(products).where(eq(products.isActive, true)).limit(6);
+    const result = await db.select().from(products).where(eq(products.isFeatured, true)).limit(6);
     return result;
   }
 
@@ -52,6 +55,23 @@ export class DatabaseStorage implements IStorage {
       product.description.toLowerCase().includes(query.toLowerCase()) ||
       product.category.toLowerCase().includes(query.toLowerCase())
     );
+  }
+
+  async createProduct(insertProduct: InsertProduct): Promise<Product> {
+    const [product] = await db.insert(products).values(insertProduct).returning();
+    return product;
+  }
+
+  async updateProduct(id: number, updateData: Partial<InsertProduct>): Promise<Product | undefined> {
+    const [product] = await db.update(products)
+      .set(updateData)
+      .where(eq(products.id, id))
+      .returning();
+    return product || undefined;
+  }
+
+  async deleteProduct(id: number): Promise<void> {
+    await db.delete(products).where(eq(products.id, id));
   }
 
   async getTestimonials(): Promise<Testimonial[]> {
