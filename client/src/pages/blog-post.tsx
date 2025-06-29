@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "wouter";
 import type { BlogPost } from "@shared/schema";
+import { processAffiliateLinks } from "@/lib/affiliateLinks";
 
 export default function BlogPostPage() {
   const [match, params] = useRoute("/blog/:slug");
@@ -133,7 +134,7 @@ export default function BlogPostPage() {
                     <ul key={index} className="list-disc list-inside mb-4 space-y-2">
                       {listItems.map((item, itemIndex) => (
                         <li key={itemIndex} className="text-gray-700">
-                          {item.replace('- ', '')}
+                          {processAffiliateLinks(item.replace('- ', ''))}
                         </li>
                       ))}
                     </ul>
@@ -145,7 +146,7 @@ export default function BlogPostPage() {
                     <ol key={index} className="list-decimal list-inside mb-4 space-y-2">
                       {listItems.map((item, itemIndex) => (
                         <li key={itemIndex} className="text-gray-700">
-                          {item.replace(/^\d+\.\s*/, '')}
+                          {processAffiliateLinks(item.replace(/^\d+\.\s*/, ''))}
                         </li>
                       ))}
                     </ol>
@@ -153,7 +154,7 @@ export default function BlogPostPage() {
                 }
                 return (
                   <p key={index} className="text-gray-700 mb-4 leading-relaxed">
-                    {paragraph}
+                    {processAffiliateLinks(paragraph)}
                   </p>
                 );
               })}
