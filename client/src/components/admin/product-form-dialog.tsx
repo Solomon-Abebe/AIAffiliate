@@ -21,8 +21,28 @@ const productFormSchema = z.object({
   price: z.string().min(1, "Price is required"),
   originalPrice: z.string().optional(),
   rating: z.string().min(1, "Rating is required"),
-  imageUrl: z.string().url("Must be a valid URL"),
-  affiliateUrl: z.string().url("Must be a valid URL"),
+  imageUrl: z.string().min(1, "Image URL is required").refine(
+    (url) => {
+      try {
+        new URL(url);
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    { message: "Must be a valid URL" }
+  ),
+  affiliateUrl: z.string().min(1, "Affiliate URL is required").refine(
+    (url) => {
+      try {
+        new URL(url);
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    { message: "Must be a valid URL" }
+  ),
   isActive: z.boolean().default(true),
   isFeatured: z.boolean().default(false),
 });
