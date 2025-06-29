@@ -203,6 +203,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/blog/all", async (req, res) => {
+    try {
+      const blogPosts = await storage.getAllBlogPosts();
+      res.json(blogPosts);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch all blog posts" });
+    }
+  });
+
   app.get("/api/blog/:slug", async (req, res) => {
     try {
       const { slug } = req.params;

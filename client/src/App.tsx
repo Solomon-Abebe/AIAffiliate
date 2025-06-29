@@ -15,6 +15,8 @@ import BlogPost from "@/pages/blog-post";
 import AdminDashboard from "@/pages/admin/admin-dashboard";
 import ProductsAdmin from "@/pages/admin/products-admin";
 import BlogAdmin from "@/pages/admin/blog-admin";
+import UsersAdmin from "@/pages/admin/users-admin";
+import SettingsAdmin from "@/pages/admin/settings-admin";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -32,6 +34,8 @@ function Router() {
           <Route path="/admin" component={AdminDashboard} />
           <Route path="/admin/products" component={ProductsAdmin} />
           <Route path="/admin/blog" component={BlogAdmin} />
+          <Route path="/admin/users" component={UsersAdmin} />
+          <Route path="/admin/settings" component={SettingsAdmin} />
           <Route component={NotFound} />
         </Switch>
       </main>
