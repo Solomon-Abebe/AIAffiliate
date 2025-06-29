@@ -162,17 +162,19 @@ export default function BlogPostPage() {
         </Card>
 
         {/* Tags */}
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Tags</h3>
-          <div className="flex flex-wrap gap-2">
-            {blogPost.tags.map((tag) => (
-              <Badge key={tag} variant="outline">
-                <Tag className="h-3 w-3 mr-1" />
-                {tag}
-              </Badge>
-            ))}
+        {blogPost.tags && blogPost.tags.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Tags</h3>
+            <div className="flex flex-wrap gap-2">
+              {blogPost.tags.map((tag) => (
+                <Badge key={tag} variant="outline">
+                  <Tag className="h-3 w-3 mr-1" />
+                  {tag}
+                </Badge>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* CTA */}
         <Card className="bg-primary text-white">

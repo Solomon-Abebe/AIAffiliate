@@ -195,6 +195,7 @@ export class MemStorage implements IStorage {
         imageUrl: "https://images.unsplash.com/photo-1593642702749-b7d2a804fbcf?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
         affiliateUrl: "#",
         isActive: true,
+        isFeatured: true,
         createdAt: new Date(),
       },
       {
@@ -208,6 +209,7 @@ export class MemStorage implements IStorage {
         imageUrl: "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
         affiliateUrl: "#",
         isActive: true,
+        isFeatured: false,
         createdAt: new Date(),
       },
       {
@@ -221,6 +223,7 @@ export class MemStorage implements IStorage {
         imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
         affiliateUrl: "#",
         isActive: true,
+        isFeatured: true,
         createdAt: new Date(),
       },
     ];
@@ -325,6 +328,42 @@ export class MemStorage implements IStorage {
     );
   }
 
+  async createProduct(insertProduct: InsertProduct): Promise<Product> {
+    const id = this.currentProductId++;
+    const product: Product = {
+      id,
+      name: insertProduct.name,
+      description: insertProduct.description,
+      category: insertProduct.category,
+      price: insertProduct.price,
+      originalPrice: insertProduct.originalPrice || null,
+      rating: insertProduct.rating || "5.0",
+      imageUrl: insertProduct.imageUrl,
+      affiliateUrl: insertProduct.affiliateUrl,
+      isActive: insertProduct.isActive !== undefined ? insertProduct.isActive : true,
+      isFeatured: insertProduct.isFeatured !== undefined ? insertProduct.isFeatured : false,
+      createdAt: new Date(),
+    };
+    this.products.set(id, product);
+    return product;
+  }
+
+  async updateProduct(id: number, updateData: Partial<InsertProduct>): Promise<Product | undefined> {
+    const existingProduct = this.products.get(id);
+    if (!existingProduct) return undefined;
+    
+    const updatedProduct: Product = {
+      ...existingProduct,
+      ...updateData,
+    };
+    this.products.set(id, updatedProduct);
+    return updatedProduct;
+  }
+
+  async deleteProduct(id: number): Promise<void> {
+    this.products.delete(id);
+  }
+
   async getTestimonials(): Promise<Testimonial[]> {
     return Array.from(this.testimonials.values());
   }
@@ -387,6 +426,50 @@ export class MemStorage implements IStorage {
 
   async getBlogPostsByCategory(category: string): Promise<BlogPost[]> {
     return Array.from(this.blogPosts.values()).filter(p => p.category === category && p.isPublished);
+  }
+
+  async getAllBlogPosts(): Promise<BlogPost[]> {
+    return Array.from(this.blogPosts.values());
+  }
+
+  async getBlogPostById(id: number): Promise<BlogPost | undefined> {
+    return this.blogPosts.get(id);
+  }
+
+  async createBlogPost(insertBlogPost: InsertBlogPost): Promise<BlogPost> {
+    const id = this.currentBlogId++;
+    const blogPost: BlogPost = {
+      id,
+      title: insertBlogPost.title,
+      slug: insertBlogPost.slug,
+      excerpt: insertBlogPost.excerpt,
+      content: insertBlogPost.content,
+      category: insertBlogPost.category,
+      imageUrl: insertBlogPost.imageUrl,
+      tags: insertBlogPost.tags || [],
+      isPublished: insertBlogPost.isPublished !== undefined ? insertBlogPost.isPublished : false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.blogPosts.set(id, blogPost);
+    return blogPost;
+  }
+
+  async updateBlogPost(id: number, updateData: Partial<InsertBlogPost>): Promise<BlogPost | undefined> {
+    const existingPost = this.blogPosts.get(id);
+    if (!existingPost) return undefined;
+    
+    const updatedPost: BlogPost = {
+      ...existingPost,
+      ...updateData,
+      updatedAt: new Date(),
+    };
+    this.blogPosts.set(id, updatedPost);
+    return updatedPost;
+  }
+
+  async deleteBlogPost(id: number): Promise<void> {
+    this.blogPosts.delete(id);
   }
 }
 
