@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -309,6 +309,9 @@ export function ProductFormDialog({ open, onClose, product }: ProductFormDialogP
           <DialogTitle>
             {product ? "Edit Product" : "Add New Product"}
           </DialogTitle>
+          <DialogDescription>
+            {product ? "Update the product information below." : "Fill in the details to add a new product to your catalog."}
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -357,7 +360,10 @@ export function ProductFormDialog({ open, onClose, product }: ProductFormDialogP
                         <Input
                           placeholder="Enter custom category"
                           value={customCategory}
-                          onChange={(e) => setCustomCategory(e.target.value)}
+                          onChange={(e) => {
+                            setCustomCategory(e.target.value);
+                            form.setValue("category", e.target.value);
+                          }}
                         />
                         <Button
                           type="button"
