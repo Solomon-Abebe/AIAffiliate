@@ -8,6 +8,7 @@ import { ProductCard } from "@/components/product/product-card";
 import { ProductComparison } from "@/components/product/product-comparison";
 import { TestimonialCard } from "@/components/testimonials/testimonial-card";
 import { NewsletterForm } from "@/components/forms/newsletter-form";
+import { LeadMagnetForm } from "@/components/forms/lead-magnet-form";
 import type { Product, Testimonial } from "@shared/schema";
 
 export default function Home() {
@@ -24,8 +25,9 @@ export default function Home() {
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-blue-50 to-indigo-100 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
+            {/* Main Content */}
+            <div className="lg:col-span-2">
               <div className="flex items-center space-x-2 text-sm text-primary font-medium mb-4">
                 <Bot className="h-4 w-4" />
                 <span>AI-Powered for Developers</span>
@@ -67,19 +69,28 @@ export default function Home() {
                   <span>10,000+ Developers Served</span>
                 </div>
               </div>
+              
+              {/* Visual Element */}
+              <div className="relative mt-12 hidden lg:block">
+                <img
+                  src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400"
+                  alt="AI-powered analytics dashboard"
+                  className="rounded-2xl shadow-2xl w-full h-auto"
+                />
+                <Card className="absolute -bottom-4 -right-4 p-4 shadow-lg border border-gray-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-3 h-3 bg-secondary rounded-full animate-pulse" />
+                    <span className="text-sm font-medium text-gray-700">AI Assistant Online</span>
+                  </div>
+                </Card>
+              </div>
             </div>
-            <div className="relative">
-              <img
-                src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
-                alt="AI-powered analytics dashboard"
-                className="rounded-2xl shadow-2xl w-full h-auto"
-              />
-              <Card className="absolute -bottom-6 -left-6 p-4 shadow-lg border border-gray-200">
-                <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-secondary rounded-full animate-pulse" />
-                  <span className="text-sm font-medium text-gray-700">AI Assistant Online</span>
-                </div>
-              </Card>
+            
+            {/* Lead Magnet */}
+            <div className="lg:col-span-1">
+              <div className="sticky top-8">
+                <LeadMagnetForm variant="hero" />
+              </div>
             </div>
           </div>
         </div>
