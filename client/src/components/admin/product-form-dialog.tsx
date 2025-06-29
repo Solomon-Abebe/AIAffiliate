@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { Upload, X } from "lucide-react";
 import type { Product, Category } from "@shared/schema";
 
 const productFormSchema = z.object({
@@ -21,8 +22,9 @@ const productFormSchema = z.object({
   price: z.string().min(1, "Price is required"),
   originalPrice: z.string().optional().transform(val => val === "" ? undefined : val),
   rating: z.string().min(1, "Rating is required"),
-  imageUrl: z.string().min(1, "Image URL is required").refine(
+  imageUrl: z.string().optional().refine(
     (url) => {
+      if (!url || url === "") return true; // Allow empty when using file upload
       try {
         new URL(url);
         return true;
@@ -73,6 +75,9 @@ export function ProductFormDialog({ open, onClose, product }: ProductFormDialogP
   const queryClient = useQueryClient();
   const [showCustomCategory, setShowCustomCategory] = useState(false);
   const [customCategory, setCustomCategory] = useState("");
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [useImageUpload, setUseImageUpload] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch existing categories
   const { data: categoriesData = [] } = useQuery<Category[]>({
@@ -170,6 +175,10 @@ export function ProductFormDialog({ open, onClose, product }: ProductFormDialogP
         setCustomCategory("");
       }
 
+      // Reset image upload state
+      setUploadedImage(null);
+      setUseImageUpload(false);
+
       form.reset({
         name: product.name,
         description: product.description,
@@ -185,6 +194,8 @@ export function ProductFormDialog({ open, onClose, product }: ProductFormDialogP
     } else {
       setShowCustomCategory(false);
       setCustomCategory("");
+      setUploadedImage(null);
+      setUseImageUpload(false);
       form.reset({
         name: "",
         description: "",
@@ -200,12 +211,51 @@ export function ProductFormDialog({ open, onClose, product }: ProductFormDialogP
     }
   }, [product, form]);
 
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const result = e.target?.result as string;
+          setUploadedImage(result);
+          form.setValue("imageUrl", result);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        toast({
+          title: "Error",
+          description: "Please select a valid image file",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const removeUploadedImage = () => {
+    setUploadedImage(null);
+    form.setValue("imageUrl", "");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const onSubmit = async (data: ProductFormData) => {
     // Validate custom category if it's being used
     if (showCustomCategory && !customCategory.trim()) {
       toast({
         title: "Error",
         description: "Please enter a custom category name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate image input
+    if (!data.imageUrl && !uploadedImage) {
+      toast({
+        title: "Error",
+        description: "Please provide either an image URL or upload an image file",
         variant: "destructive",
       });
       return;
@@ -224,10 +274,14 @@ export function ProductFormDialog({ open, onClose, product }: ProductFormDialogP
       }
     }
 
+    // Use uploaded image if available, otherwise use URL
+    const imageUrl = uploadedImage || data.imageUrl || "";
+
     // Use custom category if it's being used
     const finalData = {
       ...data,
-      category: categoryName
+      category: categoryName,
+      imageUrl: imageUrl
     };
 
     if (product) {
@@ -392,10 +446,87 @@ export function ProductFormDialog({ open, onClose, product }: ProductFormDialogP
               name="imageUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Image URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://example.com/image.jpg" {...field} />
-                  </FormControl>
+                  <FormLabel>Product Image</FormLabel>
+                  <div className="space-y-4">
+                    {/* Toggle between URL and Upload */}
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant={!useImageUpload ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => {
+                          setUseImageUpload(false);
+                          setUploadedImage(null);
+                          if (fileInputRef.current) {
+                            fileInputRef.current.value = "";
+                          }
+                        }}
+                      >
+                        Use URL
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={useImageUpload ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => {
+                          setUseImageUpload(true);
+                          form.setValue("imageUrl", "");
+                        }}
+                      >
+                        Upload File
+                      </Button>
+                    </div>
+
+                    {!useImageUpload ? (
+                      <FormControl>
+                        <Input 
+                          placeholder="https://example.com/image.jpg" 
+                          {...field} 
+                          disabled={!!uploadedImage}
+                        />
+                      </FormControl>
+                    ) : (
+                      <div className="space-y-2">
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                        />
+                        
+                        {!uploadedImage ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="w-full h-32 border-dashed border-2 flex flex-col items-center justify-center gap-2"
+                          >
+                            <Upload className="h-8 w-8 text-muted-foreground" />
+                            <span>Click to upload image</span>
+                            <span className="text-sm text-muted-foreground">PNG, JPG, GIF up to 10MB</span>
+                          </Button>
+                        ) : (
+                          <div className="relative">
+                            <img
+                              src={uploadedImage}
+                              alt="Uploaded preview"
+                              className="w-full h-32 object-cover rounded-md border"
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              onClick={removeUploadedImage}
+                              className="absolute top-2 right-2"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
