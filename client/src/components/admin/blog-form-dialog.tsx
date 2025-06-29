@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-import { X } from "lucide-react";
+import { X, Upload, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -39,6 +39,9 @@ export function BlogFormDialog({ open, onClose, blogPost }: BlogFormDialogProps)
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [tagInput, setTagInput] = useState("");
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [imageUploadMethod, setImageUploadMethod] = useState<"url" | "upload">("url");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<BlogFormData>({
     resolver: zodResolver(blogFormSchema),
@@ -103,7 +106,7 @@ export function BlogFormDialog({ open, onClose, blogPost }: BlogFormDialogProps)
   });
 
   useEffect(() => {
-    if (blogPost) {
+    if (open && blogPost) {
       form.reset({
         title: blogPost.title,
         slug: blogPost.slug,
@@ -114,7 +117,16 @@ export function BlogFormDialog({ open, onClose, blogPost }: BlogFormDialogProps)
         tags: blogPost.tags,
         isPublished: blogPost.isPublished,
       });
-    } else {
+      
+      // Set image upload method based on existing image
+      if (blogPost.imageUrl && blogPost.imageUrl.startsWith('data:')) {
+        setImageUploadMethod("upload");
+        setUploadedImage(blogPost.imageUrl);
+      } else {
+        setImageUploadMethod("url");
+        setUploadedImage(null);
+      }
+    } else if (open && !blogPost) {
       form.reset({
         title: "",
         slug: "",
@@ -125,8 +137,19 @@ export function BlogFormDialog({ open, onClose, blogPost }: BlogFormDialogProps)
         tags: [],
         isPublished: false,
       });
+      
+      // Reset image upload state
+      setImageUploadMethod("url");
+      setUploadedImage(null);
     }
-  }, [blogPost, form]);
+    
+    // Reset state when dialog closes
+    if (!open) {
+      setTagInput("");
+      setImageUploadMethod("url");
+      setUploadedImage(null);
+    }
+  }, [blogPost, form, open]);
 
   const generateSlug = (title: string) => {
     return title
@@ -155,6 +178,35 @@ export function BlogFormDialog({ open, onClose, blogPost }: BlogFormDialogProps)
   const removeTag = (tagToRemove: string) => {
     const currentTags = form.getValues("tags");
     form.setValue("tags", currentTags.filter(tag => tag !== tagToRemove));
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const result = e.target?.result as string;
+          setUploadedImage(result);
+          form.setValue("imageUrl", result);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        toast({
+          title: "Invalid file type",
+          description: "Please select an image file (JPEG, PNG, WebP, etc.)",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleImageMethodChange = (method: "url" | "upload") => {
+    setImageUploadMethod(method);
+    if (method === "url") {
+      setUploadedImage(null);
+      form.setValue("imageUrl", "");
+    }
   };
 
   const onSubmit = (data: BlogFormData) => {
@@ -290,10 +342,69 @@ export function BlogFormDialog({ open, onClose, blogPost }: BlogFormDialogProps)
                 name="imageUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Featured Image URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://example.com/image.jpg" {...field} />
-                    </FormControl>
+                    <FormLabel>Featured Image</FormLabel>
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant={imageUploadMethod === "url" ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handleImageMethodChange("url")}
+                        >
+                          <Image className="w-4 h-4 mr-1" />
+                          URL
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={imageUploadMethod === "upload" ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handleImageMethodChange("upload")}
+                        >
+                          <Upload className="w-4 h-4 mr-1" />
+                          Upload
+                        </Button>
+                      </div>
+                      
+                      {imageUploadMethod === "url" ? (
+                        <FormControl>
+                          <Input 
+                            placeholder="https://example.com/image.jpg" 
+                            {...field} 
+                          />
+                        </FormControl>
+                      ) : (
+                        <div className="space-y-3">
+                          <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileUpload}
+                            accept="image/*"
+                            className="hidden"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="w-full"
+                          >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Choose Image File
+                          </Button>
+                          {uploadedImage && (
+                            <div className="space-y-2">
+                              <img
+                                src={uploadedImage}
+                                alt="Uploaded preview"
+                                className="w-full h-48 object-cover rounded-md border"
+                              />
+                              <p className="text-sm text-muted-foreground">
+                                Image uploaded successfully
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
