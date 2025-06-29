@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -38,6 +38,8 @@ interface ProductFormDialogProps {
 export function ProductFormDialog({ open, onClose, product }: ProductFormDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [showCustomCategory, setShowCustomCategory] = useState(false);
+  const [customCategory, setCustomCategory] = useState("");
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productFormSchema),
@@ -103,6 +105,16 @@ export function ProductFormDialog({ open, onClose, product }: ProductFormDialogP
 
   useEffect(() => {
     if (product) {
+      // Check if the product category is in the predefined list
+      const isCustomCategory = !categories.includes(product.category);
+      if (isCustomCategory) {
+        setShowCustomCategory(true);
+        setCustomCategory(product.category);
+      } else {
+        setShowCustomCategory(false);
+        setCustomCategory("");
+      }
+
       form.reset({
         name: product.name,
         description: product.description,
@@ -116,6 +128,8 @@ export function ProductFormDialog({ open, onClose, product }: ProductFormDialogP
         isFeatured: product.isFeatured,
       });
     } else {
+      setShowCustomCategory(false);
+      setCustomCategory("");
       form.reset({
         name: "",
         description: "",
@@ -132,10 +146,26 @@ export function ProductFormDialog({ open, onClose, product }: ProductFormDialogP
   }, [product, form]);
 
   const onSubmit = (data: ProductFormData) => {
+    // Validate custom category if it's being used
+    if (showCustomCategory && !customCategory.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a custom category name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Use custom category if it's being used
+    const finalData = {
+      ...data,
+      category: showCustomCategory ? customCategory.trim() : data.category
+    };
+
     if (product) {
-      updateProductMutation.mutate(data);
+      updateProductMutation.mutate(finalData);
     } else {
-      createProductMutation.mutate(data);
+      createProductMutation.mutate(finalData);
     }
   };
 
@@ -151,6 +181,17 @@ export function ProductFormDialog({ open, onClose, product }: ProductFormDialogP
     "Testing",
     "Design Tools",
   ];
+
+  const handleCategoryChange = (value: string) => {
+    if (value === "custom") {
+      setShowCustomCategory(true);
+      form.setValue("category", "");
+    } else {
+      setShowCustomCategory(false);
+      setCustomCategory("");
+      form.setValue("category", value);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -184,20 +225,45 @@ export function ProductFormDialog({ open, onClose, product }: ProductFormDialogP
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category} value={category}>
-                            {category}
+                    {!showCustomCategory ? (
+                      <Select onValueChange={handleCategoryChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a category" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {categories.map((category) => (
+                            <SelectItem key={category} value={category}>
+                              {category}
+                            </SelectItem>
+                          ))}
+                          <SelectItem value="custom">
+                            + Add Custom Category
                           </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <div className="space-y-2">
+                        <Input
+                          placeholder="Enter custom category"
+                          value={customCategory}
+                          onChange={(e) => setCustomCategory(e.target.value)}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setShowCustomCategory(false);
+                            setCustomCategory("");
+                            form.setValue("category", "");
+                          }}
+                        >
+                          Use Predefined Categories
+                        </Button>
+                      </div>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
