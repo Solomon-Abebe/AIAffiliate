@@ -23,6 +23,7 @@ const blogFormSchema = z.object({
   content: z.string().min(1, "Content is required"),
   category: z.string().min(1, "Category is required"),
   imageUrl: z.string().url("Must be a valid URL"),
+  affiliateUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   tags: z.array(z.string()).default([]),
   isPublished: z.boolean().default(false),
 });
@@ -114,6 +115,7 @@ export function BlogFormDialog({ open, onClose, blogPost }: BlogFormDialogProps)
         content: blogPost.content,
         category: blogPost.category,
         imageUrl: blogPost.imageUrl,
+        affiliateUrl: blogPost.affiliateUrl || "",
         tags: blogPost.tags,
         isPublished: blogPost.isPublished,
       });
@@ -134,6 +136,7 @@ export function BlogFormDialog({ open, onClose, blogPost }: BlogFormDialogProps)
         content: "",
         category: "",
         imageUrl: "",
+        affiliateUrl: "",
         tags: [],
         isPublished: false,
       });
@@ -405,6 +408,23 @@ export function BlogFormDialog({ open, onClose, blogPost }: BlogFormDialogProps)
                         </div>
                       )}
                     </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="affiliateUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Affiliate URL (Optional)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="https://example.com/affiliate-link" 
+                        {...field} 
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
