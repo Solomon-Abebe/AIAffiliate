@@ -99,6 +99,10 @@ DevToolHub is a specialized web application that combines AI-powered tool recomm
 - Automated schema validation
 
 ## Recent Changes
+- June 29, 2025: Added automatic affiliate link system for blog posts with keyword-to-link conversion
+- June 29, 2025: Implemented file upload functionality for blog post images in admin panel
+- June 29, 2025: Enhanced blog post content with detailed developer tool reviews and affiliate keywords
+- June 29, 2025: Added affiliate links for 15+ popular tools including VS Code, React, GitHub, AWS, Docker, GoHighLevel
 - June 28, 2025: **MAJOR NICHE UPDATE** - Transformed website to focus on fullstack development tools and resources
 - June 28, 2025: Rebranded from "AffiliatePro" to "DevToolHub" throughout the application
 - June 28, 2025: Updated product catalog with developer-focused tools (VS Code extensions, React/Node.js courses, cloud services, databases)

@@ -95,6 +95,12 @@ export const affiliateLinks: AffiliateLink[] = [
     keyword: "TypeScript",
     url: "https://www.typescriptlang.org/?utm_source=devtoolhub&utm_medium=affiliate",
     displayText: "TypeScript"
+  },
+  // Marketing Platforms
+  {
+    keyword: "GoHighLevel",
+    url: "https://www.gohighlevel.com/?utm_source=devtoolhub&utm_medium=affiliate",
+    displayText: "GoHighLevel"
   }
 ];
 
