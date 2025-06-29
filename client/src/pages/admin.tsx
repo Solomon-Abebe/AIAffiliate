@@ -1,10 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { Settings, Database, BarChart3, Users } from "lucide-react";
+import { Settings, Database, BarChart3, Users, LogOut } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ProtectedAdminRoute } from "@/components/auth/protected-admin-route";
+import { useAdminAuth } from "@/hooks/use-admin-auth";
 import type { Product } from "@shared/schema";
 
-export default function AdminDashboard() {
+function AdminDashboardContent() {
+  const { logout } = useAdminAuth();
   const { data: products = [], isLoading } = useQuery<Product[]>({
     queryKey: ['/api/products'],
   });
@@ -47,6 +51,14 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              onClick={logout}
+              className="flex items-center gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </Button>
             <Settings className="h-8 w-8 text-primary" />
           </div>
         </div>
@@ -206,5 +218,13 @@ export default function AdminDashboard() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminDashboard() {
+  return (
+    <ProtectedAdminRoute>
+      <AdminDashboardContent />
+    </ProtectedAdminRoute>
   );
 }

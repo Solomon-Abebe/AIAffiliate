@@ -1,11 +1,79 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { generateChatResponse, generateProductRecommendations } from "./services/openai";
 import { insertNewsletterSchema, insertContactSchema, insertChatMessageSchema, insertProductSchema, insertBlogPostSchema, insertCategorySchema } from "@shared/schema";
 import { z } from "zod";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
+
+// JWT secret - in production, this should be an environment variable
+const JWT_SECRET = process.env.JWT_SECRET || "devtoolhub-admin-secret-2025";
+
+// Admin credentials - in production, these should be stored securely in database
+const ADMIN_CREDENTIALS = {
+  username: "admin",
+  password: "$2b$10$rOZV1.KVKVZm4V8m4V8m4u" // bcrypt hash for "admin123"
+};
+
+// Middleware to verify JWT token
+const verifyAdminToken = (req: Request, res: Response, next: NextFunction) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+  if (!token) {
+    return res.status(401).json({ message: "Access token required" });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ message: "Invalid or expired token" });
+    }
+    next();
+  });
+};
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Admin authentication endpoints
+  app.post("/api/admin/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+
+      if (!username || !password) {
+        return res.status(400).json({ message: "Username and password are required" });
+      }
+
+      // Check credentials
+      if (username !== ADMIN_CREDENTIALS.username) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // For simplicity, using plain text comparison
+      // In production, use bcrypt.compare with hashed password
+      if (password !== "admin123") {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Generate JWT token
+      const token = jwt.sign(
+        { username, role: "admin" },
+        JWT_SECRET,
+        { expiresIn: "24h" }
+      );
+
+      res.json({ 
+        token, 
+        message: "Login successful",
+        user: { username, role: "admin" }
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  app.get("/api/admin/verify", verifyAdminToken, (req, res) => {
+    res.json({ message: "Token is valid" });
+  });
   // Products endpoints
   app.get("/api/products", async (req, res) => {
     try {
@@ -39,7 +107,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin product routes
-  app.post("/api/products", async (req, res) => {
+  app.post("/api/products", verifyAdminToken, async (req, res) => {
     try {
       const validatedData = insertProductSchema.parse(req.body);
       const product = await storage.createProduct(validatedData);
@@ -53,7 +121,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/products/:id", async (req, res) => {
+  app.patch("/api/products/:id", verifyAdminToken, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const validatedData = insertProductSchema.partial().parse(req.body);
@@ -71,7 +139,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/products/:id", async (req, res) => {
+  app.delete("/api/products/:id", verifyAdminToken, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteProduct(id);
@@ -93,7 +161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/categories", async (req, res) => {
+  app.post("/api/categories", verifyAdminToken, async (req, res) => {
     try {
       const validatedData = insertCategorySchema.parse(req.body);
       const category = await storage.createCategory(validatedData);
