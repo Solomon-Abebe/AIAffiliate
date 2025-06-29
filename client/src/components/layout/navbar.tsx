@@ -35,6 +35,7 @@ export function Navbar() {
     { href: "/blog", label: "Blog" },
     { href: "/about", label: "About" },
     { href: "/contact", label: "Contact" },
+    { href: "/admin", label: "Admin" },
   ];
 
   const isActive = (href: string) => {

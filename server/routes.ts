@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { generateChatResponse, generateProductRecommendations } from "./services/openai";
-import { insertNewsletterSchema, insertContactSchema, insertChatMessageSchema, insertProductSchema } from "@shared/schema";
+import { insertNewsletterSchema, insertContactSchema, insertChatMessageSchema, insertProductSchema, insertBlogPostSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -223,6 +223,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(blogPosts);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch blog posts by category" });
+    }
+  });
+
+  // Admin API routes for products
+  app.post("/api/products", async (req, res) => {
+    try {
+      const validatedData = insertProductSchema.parse(req.body);
+      const product = await storage.createProduct(validatedData);
+      res.json(product);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid product data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create product" });
+    }
+  });
+
+  app.put("/api/products/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertProductSchema.partial().parse(req.body);
+      const product = await storage.updateProduct(id, validatedData);
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      res.json(product);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid product data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update product" });
+    }
+  });
+
+  app.delete("/api/products/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteProduct(id);
+      res.json({ message: "Product deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete product" });
+    }
+  });
+
+  // Admin API routes for blog posts
+  app.get("/api/blog/all", async (req, res) => {
+    try {
+      const blogPosts = await storage.getAllBlogPosts();
+      res.json(blogPosts);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch all blog posts" });
+    }
+  });
+
+  app.post("/api/blog", async (req, res) => {
+    try {
+      const validatedData = insertBlogPostSchema.parse(req.body);
+      const blogPost = await storage.createBlogPost(validatedData);
+      res.json(blogPost);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid blog post data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create blog post" });
+    }
+  });
+
+  app.put("/api/blog/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertBlogPostSchema.partial().parse(req.body);
+      const blogPost = await storage.updateBlogPost(id, validatedData);
+      if (!blogPost) {
+        return res.status(404).json({ message: "Blog post not found" });
+      }
+      res.json(blogPost);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid blog post data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update blog post" });
+    }
+  });
+
+  app.patch("/api/blog/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { isPublished } = req.body;
+      const blogPost = await storage.updateBlogPost(id, { isPublished });
+      if (!blogPost) {
+        return res.status(404).json({ message: "Blog post not found" });
+      }
+      res.json(blogPost);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update blog post" });
+    }
+  });
+
+  app.delete("/api/blog/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteBlogPost(id);
+      res.json({ message: "Blog post deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete blog post" });
     }
   });
 
