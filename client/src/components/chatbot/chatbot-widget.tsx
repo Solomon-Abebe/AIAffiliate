@@ -32,6 +32,15 @@ export function ChatbotWidget() {
   }, [messages]);
 
   useEffect(() => {
+    const handleOpenChat = () => {
+      setIsOpen(true);
+    };
+
+    window.addEventListener('openChatbot', handleOpenChat);
+    return () => window.removeEventListener('openChatbot', handleOpenChat);
+  }, []);
+
+  useEffect(() => {
     if (isOpen && messages.length === 0) {
       // Add welcome message when chatbot is first opened
       setMessages([

@@ -185,7 +185,11 @@ export default function BlogPostPage() {
             <p className="text-blue-100 mb-6">
               Our AI chatbot can help you find the perfect products based on your specific needs and budget.
             </p>
-            <Button variant="secondary" size="lg">
+            <Button 
+              variant="secondary" 
+              size="lg"
+              onClick={() => window.dispatchEvent(new CustomEvent('openChatbot'))}
+            >
               Start Chat with AI Assistant
             </Button>
           </CardContent>
