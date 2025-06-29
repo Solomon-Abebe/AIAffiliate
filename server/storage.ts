@@ -1,4 +1,4 @@
-import { products, testimonials, newsletters, contacts, chatMessages, blogPosts, type Product, type InsertProduct, type Testimonial, type InsertTestimonial, type Newsletter, type InsertNewsletter, type Contact, type InsertContact, type ChatMessage, type InsertChatMessage, type BlogPost, type InsertBlogPost } from "@shared/schema";
+import { products, testimonials, newsletters, contacts, chatMessages, blogPosts, categories, type Product, type InsertProduct, type Testimonial, type InsertTestimonial, type Newsletter, type InsertNewsletter, type Contact, type InsertContact, type ChatMessage, type InsertChatMessage, type BlogPost, type InsertBlogPost, type Category, type InsertCategory } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 
@@ -11,6 +11,10 @@ export interface IStorage {
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product | undefined>;
   deleteProduct(id: number): Promise<void>;
+  
+  // Categories
+  getCategories(): Promise<Category[]>;
+  createCategory(category: InsertCategory): Promise<Category>;
   
   // Testimonials
   getTestimonials(): Promise<Testimonial[]>;
@@ -63,7 +67,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createProduct(insertProduct: InsertProduct): Promise<Product> {
-    const [product] = await db.insert(products).values(insertProduct).returning();
+    // Handle empty originalPrice field
+    const productData = {
+      ...insertProduct,
+      originalPrice: insertProduct.originalPrice || null
+    };
+    
+    const [product] = await db.insert(products).values(productData).returning();
     return product;
   }
 
@@ -77,6 +87,15 @@ export class DatabaseStorage implements IStorage {
 
   async deleteProduct(id: number): Promise<void> {
     await db.delete(products).where(eq(products.id, id));
+  }
+
+  async getCategories(): Promise<Category[]> {
+    return await db.select().from(categories);
+  }
+
+  async createCategory(insertCategory: InsertCategory): Promise<Category> {
+    const [category] = await db.insert(categories).values(insertCategory).returning();
+    return category;
   }
 
   async getTestimonials(): Promise<Testimonial[]> {
@@ -157,12 +176,14 @@ export class MemStorage implements IStorage {
   private contacts: Map<number, Contact>;
   private chatMessages: Map<number, ChatMessage>;
   private blogPosts: Map<number, BlogPost>;
+  private categories: Map<number, Category>;
   private currentProductId: number;
   private currentTestimonialId: number;
   private currentNewsletterId: number;
   private currentContactId: number;
   private currentChatId: number;
   private currentBlogId: number;
+  private currentCategoryId: number;
 
   constructor() {
     this.products = new Map();
@@ -171,12 +192,14 @@ export class MemStorage implements IStorage {
     this.contacts = new Map();
     this.chatMessages = new Map();
     this.blogPosts = new Map();
+    this.categories = new Map();
     this.currentProductId = 1;
     this.currentTestimonialId = 1;
     this.currentNewsletterId = 1;
     this.currentContactId = 1;
     this.currentChatId = 1;
     this.currentBlogId = 1;
+    this.currentCategoryId = 1;
     
     this.seedData();
   }
@@ -538,6 +561,22 @@ The developer ecosystem continues to evolve rapidly. Stay updated with the lates
 
   async deleteBlogPost(id: number): Promise<void> {
     this.blogPosts.delete(id);
+  }
+
+  async getCategories(): Promise<Category[]> {
+    return Array.from(this.categories.values());
+  }
+
+  async createCategory(insertCategory: InsertCategory): Promise<Category> {
+    const id = this.currentCategoryId++;
+    const category: Category = {
+      id,
+      name: insertCategory.name,
+      isDefault: insertCategory.isDefault || false,
+      createdAt: new Date(),
+    };
+    this.categories.set(id, category);
+    return category;
   }
 }
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,14 +12,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import type { Product } from "@shared/schema";
+import type { Product, Category } from "@shared/schema";
 
 const productFormSchema = z.object({
   name: z.string().min(1, "Product name is required"),
   description: z.string().min(1, "Description is required"),
   category: z.string().min(1, "Category is required"),
   price: z.string().min(1, "Price is required"),
-  originalPrice: z.string().optional(),
+  originalPrice: z.string().optional().transform(val => val === "" ? undefined : val),
   rating: z.string().min(1, "Rating is required"),
   imageUrl: z.string().min(1, "Image URL is required").refine(
     (url) => {
@@ -55,11 +55,36 @@ interface ProductFormDialogProps {
   product?: Product | null;
 }
 
+const defaultCategories = [
+  "Development Tools",
+  "Code Editors",
+  "Cloud Services",
+  "Courses",
+  "Libraries",
+  "Frameworks",
+  "Databases",
+  "DevOps",
+  "Testing",
+  "Design Tools",
+];
+
 export function ProductFormDialog({ open, onClose, product }: ProductFormDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showCustomCategory, setShowCustomCategory] = useState(false);
   const [customCategory, setCustomCategory] = useState("");
+
+  // Fetch existing categories
+  const { data: categoriesData = [] } = useQuery<Category[]>({
+    queryKey: ["/api/categories"],
+    enabled: open,
+  });
+
+  // Combine default and fetched categories, removing duplicates
+  const allCategories = [
+    ...defaultCategories,
+    ...categoriesData.map(cat => cat.name).filter(name => !defaultCategories.includes(name))
+  ];
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productFormSchema),
@@ -74,6 +99,16 @@ export function ProductFormDialog({ open, onClose, product }: ProductFormDialogP
       affiliateUrl: "",
       isActive: true,
       isFeatured: false,
+    },
+  });
+
+  const createCategoryMutation = useMutation({
+    mutationFn: async (categoryName: string) => {
+      const response = await apiRequest("POST", "/api/categories", { name: categoryName });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
     },
   });
 
@@ -126,7 +161,7 @@ export function ProductFormDialog({ open, onClose, product }: ProductFormDialogP
   useEffect(() => {
     if (product) {
       // Check if the product category is in the predefined list
-      const isCustomCategory = !categories.includes(product.category);
+      const isCustomCategory = !defaultCategories.includes(product.category);
       if (isCustomCategory) {
         setShowCustomCategory(true);
         setCustomCategory(product.category);
@@ -165,7 +200,7 @@ export function ProductFormDialog({ open, onClose, product }: ProductFormDialogP
     }
   }, [product, form]);
 
-  const onSubmit = (data: ProductFormData) => {
+  const onSubmit = async (data: ProductFormData) => {
     // Validate custom category if it's being used
     if (showCustomCategory && !customCategory.trim()) {
       toast({
@@ -176,10 +211,23 @@ export function ProductFormDialog({ open, onClose, product }: ProductFormDialogP
       return;
     }
 
+    let categoryName = data.category;
+    
+    // Create custom category first if needed
+    if (showCustomCategory && customCategory.trim()) {
+      try {
+        await createCategoryMutation.mutateAsync(customCategory.trim());
+        categoryName = customCategory.trim();
+      } catch (error) {
+        // Category might already exist, continue with the name
+        categoryName = customCategory.trim();
+      }
+    }
+
     // Use custom category if it's being used
     const finalData = {
       ...data,
-      category: showCustomCategory ? customCategory.trim() : data.category
+      category: categoryName
     };
 
     if (product) {
@@ -188,19 +236,6 @@ export function ProductFormDialog({ open, onClose, product }: ProductFormDialogP
       createProductMutation.mutate(finalData);
     }
   };
-
-  const categories = [
-    "Development Tools",
-    "Code Editors",
-    "Cloud Services",
-    "Courses",
-    "Libraries",
-    "Frameworks",
-    "Databases",
-    "DevOps",
-    "Testing",
-    "Design Tools",
-  ];
 
   const handleCategoryChange = (value: string) => {
     if (value === "custom") {
@@ -253,7 +288,7 @@ export function ProductFormDialog({ open, onClose, product }: ProductFormDialogP
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {categories.map((category) => (
+                          {allCategories.map((category) => (
                             <SelectItem key={category} value={category}>
                               {category}
                             </SelectItem>
